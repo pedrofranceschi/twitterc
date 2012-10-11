@@ -1,16 +1,17 @@
-#include "http_connection.h"
 #include <json/json.h>
+#include <time.h>
+#include "http_connection.h"
 
 typedef struct {
 	char *name;
 	char *screen_name;
-	char *bio;
+	int user_id;
 } TwitterUser;
 
 typedef struct {
 	char *text;
 	TwitterUser *author;
-	int timestamp;
+	struct tm *created_at;
 	struct Tweet *next_tweet, *previous_tweet;
 } Tweet;
 

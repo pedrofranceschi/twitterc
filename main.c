@@ -9,6 +9,8 @@ int main() {
 	Tweet *current_tweet = first_search_result;
 	while(current_tweet != NULL) {
 		printf("current tweet: %s\n", current_tweet->text);
+		printf("date: %s", asctime(current_tweet->created_at));
+		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->user_id);
 		current_tweet = current_tweet->next_tweet;
 	}
 	
