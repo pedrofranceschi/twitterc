@@ -12,7 +12,7 @@ int main() {
 	// 
 	// HTTPConnection_free(&httpConnection);
 	
-	while(1 == 1) {
+	// while(1 == 1) {
 	Tweet *first_search_result;
 	int asd = TwitterAPI_search("iphone", &first_search_result);
 	
@@ -25,7 +25,8 @@ int main() {
 	}
 	
 	Tweet_free(current_tweet, 1);
-	}
+	// sleep(3);
+	// }
 	
 	return 0;
 }

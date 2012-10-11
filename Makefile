@@ -2,7 +2,6 @@ FILES += main.c
 # FILES += twitter_api.c
 FILES += http_connection.c
 FILES += twitter_api.c
-FILES += debug_new.cpp
 
 LIBRARIES += -lcurl
 LIBRARIES += -ljson

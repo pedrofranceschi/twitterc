@@ -76,7 +76,8 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 	int status = HTTPConnection_perform_request(&httpConnection);
 	if(status != 0) return status;
 	
-	struct json_object *tweets = json_object_object_get(json_tokener_parse(httpConnection.response_buffer), "results");
+	struct json_object *json_parser = json_tokener_parse(httpConnection.response_buffer);
+	struct json_object *tweets = json_object_object_get(json_parser, "results");
 	
 	Tweet *previous_tweet = NULL;
 	*first_search_result = NULL;
@@ -90,7 +91,8 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 		struct json_object *current_tweet_json = json_object_array_get_idx(tweets, i);
 		struct json_object *current_tweet_text_json = json_object_object_get(current_tweet_json, "text");
 		
-		current_tweet->text = (char *)strdup(json_object_get_string(current_tweet_text_json));
+		char *current_tweet_text = json_object_get_string(current_tweet_text_json);
+		current_tweet->text = (char *)strdup(current_tweet_text);
 		
 		if(*first_search_result == NULL) {
 			current_tweet->previous_tweet = NULL;
@@ -102,6 +104,9 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 			previous_tweet = current_tweet;
 		}
 		
+		// json_object_put(current_tweet_json);
+		// json_object_put(current_tweet_text_json);
+		free(current_tweet_text);
 		free(current_tweet_json);
 		free(current_tweet_text_json);
 	}
@@ -109,7 +114,9 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 	previous_tweet->next_tweet = NULL;
 	
 	free(search_api_url);
+	// json_object_put(tweets);
 	free(tweets);
+	free(json_parser);
 	HTTPConnection_free(&httpConnection);
 	
 	return 0;
