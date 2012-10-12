@@ -2,21 +2,6 @@
 
 // helper methods
 
-char *_char_replace(char *st, char *orig, char *repl) {
-	static char buffer[4096];
-	char *ch;
-	if (!(ch = strstr(st, orig)))
-		return st;
-	strncpy(buffer, st, ch-st);  
-	buffer[ch-st] = 0;
-	sprintf(buffer+(ch-st), "%s%s", repl, ch+strlen(orig));
-	return buffer;
-}
-
-char *_html_escape_string(char *string) {
-	return _char_replace(_char_replace(string, " ", "%20"), "#", "%23"); // TODO: escape more stuff
-}
-
 struct tm *_date_from_twitter_date(char *twitter_date) {
 	struct tm *date = malloc(sizeof(*date));
 	strptime(twitter_date, "%a, %d %b %Y %T +0000", date);
@@ -83,7 +68,9 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 	if(status != 0) return status;
 	
 	struct json_object *json_parser = json_tokener_parse(httpConnection.response_buffer);
+	if(json_parser == NULL) return -1;
 	struct json_object *tweets = json_object_object_get(json_parser, "results");
+	if(tweets == NULL) return -2;
 	
 	Tweet *previous_tweet = NULL;
 	*first_search_result = NULL;

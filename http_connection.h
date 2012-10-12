@@ -5,12 +5,36 @@
 
 #define MAX_BUFFER 65536
 
+typedef enum {
+	HTTPParameterTypeParameter,
+	HTTPParameterTypeHeader
+} HTTPParameterType;
+
+typedef struct {
+	char *key;
+	char *value;
+	struct HTTPParameter *next_parameter, *previous_parameter;
+	HTTPParameterType type;
+} HTTPParameter;
+
+typedef enum {
+	HTTPConnectionMethodGET,
+	HTTPConnectionMethodPOST,
+} HTTPConnectionMethod;
+
 typedef struct {
 	char *response_buffer;
 	int response_buffer_length;
 	char *url;
+	HTTPParameter *first_parameter;
+	HTTPConnectionMethod connection_method;
 } HTTPConnection;
 
-int HTTPConnection_perform_request(HTTPConnection *httpConnection);
 void HTTPConnection_initialize(HTTPConnection *httpConnection);
 void HTTPConnection_free(HTTPConnection *httpConnection);
+void HTTPParameter_initialize(HTTPParameter *http_parameter);
+void HTTPParameter_free(HTTPParameter *http_parameter, int free_related_params);
+
+int HTTPConnection_perform_request(HTTPConnection *httpConnection);
+
+char *_html_escape_string(char *string);

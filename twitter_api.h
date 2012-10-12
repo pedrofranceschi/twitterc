@@ -1,6 +1,7 @@
 #include <json/json.h>
 #include <time.h>
-#include "http_connection.h"
+// #include "http_connection.h"
+#include "twitter_api_oauth.h"
 
 typedef struct {
 	char *name;
@@ -15,6 +16,7 @@ typedef struct {
 	struct Tweet *next_tweet, *previous_tweet;
 } Tweet;
 
+char *_html_escape_string(char *string);
 void TwitterUser_free(TwitterUser *user);
 void Tweet_free(Tweet *tweet, int free_related_tweets_too);
 
