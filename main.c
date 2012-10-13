@@ -30,6 +30,7 @@ int main() {
 	httpConnection.first_parameter->key = strdup("oauth_callback");
 	httpConnection.first_parameter->value = strdup("oob");
 	httpConnection.first_parameter->type = HTTPParameterTypeAuthorizationHeader;
+	// printf("httpConnection.first_parameter: %i\n", httpConnection.first_parameter);
 	
 	// TwitterAPI_oauth_
 	TwitterAPI_oauth_authenticate_connection(&httpConnection);
