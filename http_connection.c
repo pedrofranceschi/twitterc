@@ -121,10 +121,11 @@ int HTTPConnection_perform_request(HTTPConnection *httpConnection) {
 			char *current_parameter_string = malloc(sizeof(char) * 200);
 			if(current_parameter->type == HTTPParameterTypeParameter) {
 				sprintf(current_parameter_string, "%s=%s&", current_parameter->key, current_parameter->value);
+				printf("current_parameter_string p: %s\n", current_parameter_string);
 				strcat(parameters_string, current_parameter_string);
 			} else if(current_parameter->type == HTTPParameterTypeHeader) {
 				sprintf(current_parameter_string, "%s: %s", current_parameter->key, current_parameter->value);
-				printf("current_parameter_string: %s\n", current_parameter_string);
+				printf("current_parameter_string h: %s\n", current_parameter_string);
 				headers = curl_slist_append(headers, current_parameter_string);
 			}
 			

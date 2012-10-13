@@ -56,7 +56,9 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 	
 	for(i = 0; i < parameters_count; i++) {
 		current_parameter = &(http_parameters[i]);
-		sprintf(signature_base_string, "%s%s=%s&", signature_base_string, current_parameter->key, current_parameter->value);
+		if(current_parameter->type != HTTPParameterTypeAuthorizationHeader) {
+			sprintf(signature_base_string, "%s%s=%s&", signature_base_string, current_parameter->key, current_parameter->value);
+		}
 	}
 	
 	signature_base_string[strlen(signature_base_string) - 1] = '\0'; // removes last '&'
@@ -112,7 +114,8 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 			last_configured_parameter->next_parameter = malloc(sizeof(*current_parameter));
 			memcpy(last_configured_parameter->next_parameter, current_parameter, sizeof(*current_parameter));
 			((HTTPParameter *)last_configured_parameter->next_parameter)->previous_parameter = last_configured_parameter;
-			last_configured_parameter = current_parameter;
+			((HTTPParameter *)last_configured_parameter->next_parameter)->type  = HTTPParameterTypeIgnore;
+			last_configured_parameter = last_configured_parameter->next_parameter;
 		}
 		current_parameter = current_parameter->next_parameter;
 	}
@@ -126,7 +129,8 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	last_configured_parameter->next_parameter = NULL;
 	http_connection->first_parameter->previous_parameter = NULL;
 	
-	HTTPParameter *oauth_signature_parameter = _create_parameter(strdup("oauth_signature"), signature_string);
+	HTTPParameter *oauth_signature_parameter = _create_parameter(strdup("oauth_signature"), _html_escape_string(signature_string));
+	oauth_signature_parameter->type = HTTPParameterTypeAuthorizationHeader;
 	
 	last_configured_parameter->next_parameter = oauth_signature_parameter;
 	oauth_signature_parameter->previous_parameter = last_configured_parameter;
@@ -136,11 +140,11 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	
 	current_parameter = oauth_consumer_key_parameter;
 	while(current_parameter != NULL) {
-		sprintf(authorization_string, "%s%s=\"%s\",", authorization_string, current_parameter->key, current_parameter->value);
+		sprintf(authorization_string, "%s%s=\"%s\", ", authorization_string, current_parameter->key, current_parameter->value);
 		current_parameter = current_parameter->next_parameter;
 	}
 	
-	authorization_string[strlen(authorization_string) - 1] = '\0'; // removes last ','
+	authorization_string[strlen(authorization_string) - 2] = '\0'; // removes last ','
 	
 	printf("authorization_string: %s\n", authorization_string);
 	
@@ -159,6 +163,12 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	}
 	
 	last_parameter->next_parameter = authorization_parameter;
+	
+	current_parameter = http_connection->first_parameter;
+	while(current_parameter != NULL) {
+		printf("key: %s (type %i)\n", current_parameter->key, current_parameter->type);
+		current_parameter = current_parameter->next_parameter;
+	}
 	
 	// HTTPParameter_free(oauth_consumer_key_parameter, 1);
 }

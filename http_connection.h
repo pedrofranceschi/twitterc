@@ -6,9 +6,10 @@
 #define MAX_BUFFER 65536
 
 typedef enum {
-	HTTPParameterTypeParameter,
-	HTTPParameterTypeHeader,
-	HTTPParameterTypeAuthorizationHeader
+	HTTPParameterTypeParameter = 1,
+	HTTPParameterTypeHeader = 2,
+	HTTPParameterTypeAuthorizationHeader = 3,
+	HTTPParameterTypeIgnore = 4
 } HTTPParameterType;
 
 typedef struct {
