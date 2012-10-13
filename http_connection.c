@@ -52,17 +52,19 @@ size_t _write_data( void *buffer, size_t size, size_t nmemb, void *userp )
 	return segsize;
 }
 
-void HTTPConnection_initialize(HTTPConnection *httpConnection) {
-	httpConnection->first_parameter = NULL;
-	httpConnection->url = NULL;
-	httpConnection->response_buffer_length = 0;
-	httpConnection->response_buffer = malloc(sizeof(char) * MAX_BUFFER);
-	httpConnection->connection_method = HTTPConnectionMethodGET;
+void HTTPConnection_initialize(HTTPConnection *http_connection) {
+	http_connection->first_parameter = NULL;
+	http_connection->url = NULL;
+	http_connection->response_buffer_length = 0;
+	http_connection->response_buffer = malloc(sizeof(char) * MAX_BUFFER);
+	http_connection->connection_method = HTTPConnectionMethodGET;
 }
 
-void HTTPConnection_free(HTTPConnection *httpConnection) {
-	free(httpConnection->response_buffer);
-	HTTPParameter_free(httpConnection->first_parameter, 1);
+void HTTPConnection_free(HTTPConnection *http_connection) {
+	free(http_connection->response_buffer);
+	free(http_connection->url);
+	HTTPParameter_free(http_connection->first_parameter, 1);
+	
 }
 
 void HTTPParameter_initialize(HTTPParameter *http_parameter) {
@@ -100,7 +102,7 @@ int HTTPConnection_perform_request(HTTPConnection *httpConnection) {
 	curl = curl_easy_init();
 	if (!curl) {
 		printf("Unable to initialize cURL.\n");
-		return 1;
+		return -1;
 	}
 	
 	curl_easy_setopt(curl, CURLOPT_URL, httpConnection->url); // sets url
@@ -113,38 +115,41 @@ int HTTPConnection_perform_request(HTTPConnection *httpConnection) {
 	
 	struct curl_slist *headers = NULL; /* init to NULL is important */
 	
-	if(httpConnection->first_parameter != NULL) {
-		char *parameters_string = malloc(sizeof(char) * 500);
-		
+	char *parameters_string = malloc(sizeof(char) * 1000);
+	
+	if(httpConnection->first_parameter != NULL) {		
 		HTTPParameter *current_parameter = httpConnection->first_parameter;
 		while(current_parameter != NULL) {
-			char *current_parameter_string = malloc(sizeof(char) * 200);
+			char *current_parameter_string = malloc(sizeof(char) * 500);
 			if(current_parameter->type == HTTPParameterTypeParameter) {
 				sprintf(current_parameter_string, "%s=%s&", current_parameter->key, current_parameter->value);
-				printf("current_parameter_string p: %s\n", current_parameter_string);
 				strcat(parameters_string, current_parameter_string);
 			} else if(current_parameter->type == HTTPParameterTypeHeader) {
 				sprintf(current_parameter_string, "%s: %s", current_parameter->key, current_parameter->value);
-				printf("current_parameter_string h: %s\n", current_parameter_string);
-				headers = curl_slist_append(headers, current_parameter_string);
+				headers = curl_slist_append(headers, strdup(current_parameter_string));
 			}
 			
 			free(current_parameter_string);
 			current_parameter = current_parameter->next_parameter;
 		}
 		
+		parameters_string[strlen(parameters_string) - 1] = '\0';
+		
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, parameters_string);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, strlen(parameters_string));
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	}
 	
 	ret = curl_easy_perform(curl);
 	
-	curl_easy_cleanup(curl);
 	curl_slist_free_all(headers);
+	curl_easy_cleanup(curl);
+	
+	free(parameters_string);
 	
 	if (ret != 0) {
-		printf("cURL error! (%d) \n", ret);
-		return 2;
+		printf("cURL error (%i): %s\n", ret, curl_easy_strerror(ret));
+		return ret;
 	}
 	
 	return 0;

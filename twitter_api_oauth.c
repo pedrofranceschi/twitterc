@@ -31,6 +31,28 @@ int compare_parameters(const void *a, const void *b)
 	return strcmp(parameter_a->key, parameter_b->key);;
 }
 
+void OAuthOAuthToken_initialize(OAuthOAuthToken *oauth_token) {
+	oauth_token->oauth_token = NULL;
+	oauth_token->oauth_token_secret = NULL;
+	oauth_token->oauth_verifier = NULL;
+}
+
+void OAuthOAuthToken_free(OAuthOAuthToken *oauth_token) {
+	free(oauth_token->oauth_token);
+	free(oauth_token->oauth_token_secret);
+	free(oauth_token->oauth_verifier);
+}
+
+void OAuthAccessToken_initialize(OAuthAccessToken *access_token) {
+	access_token->access_token = NULL;
+	access_token->access_token_secret = NULL;
+}
+
+void OAuthAccessToken_free(OAuthAccessToken *access_token) {
+	free(access_token->access_token);
+	free(access_token->access_token_secret);
+}
+
 char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPConnection *http_connection) {
 	int parameters_count = 0;
 	HTTPParameter *current_parameter = first_parameter;
@@ -65,25 +87,38 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 
 	sprintf(signature_base_string, "%s&%s&%s", (http_connection->connection_method == HTTPConnectionMethodPOST ? "POST" : "GET"), _html_escape_string(http_connection->url), _html_escape_string(signature_base_string));
 	
-	char *sha1_result = malloc(sizeof(char) * 100);
-	hmac_sha1("5K2voGiykVvfZ5R5agH8MXxOAblqpLZ12JVzp8Fwr2w&", 44, signature_base_string, strlen(signature_base_string), sha1_result);
+	char *sha1_result = malloc(sizeof(char) * 50);
+	char *key_string = malloc(sizeof(char) * 200);
+	if(current_oauth_token) {
+		sprintf(key_string, "%s&%s", OAUTH_CONSUMER_SECRET, current_oauth_token->oauth_token_secret);
+	} else {
+		sprintf(key_string, "%s&", OAUTH_CONSUMER_SECRET);
+	}
+	
+	int success = hmac_sha1(key_string, strlen(key_string), signature_base_string, strlen(signature_base_string), sha1_result);
+	if(success != 0) {
+		printf(" Error generating oauth_signature (HMAC-SHA1). \n");
+		return NULL;
+	}
+	
 	free(signature_base_string);
 	
-	char *final_signature = malloc(sizeof(char) * 100);
+	char *final_signature = malloc(sizeof(char) * 200);
 	b64_encode(sha1_result, final_signature);
 	free(sha1_result);
-	printf("final_signature: %s\n", final_signature);
+	free(key_string);
 	
 	return final_signature;
 }
 
 void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
-	HTTPParameter *oauth_consumer_key_parameter = _create_parameter(strdup("oauth_consumer_key"), strdup("CjNHZ0SUxT3mLfFnxAYeJA"));
+	HTTPParameter *oauth_consumer_key_parameter = _create_parameter(strdup("oauth_consumer_key"), strdup(OAUTH_CONSUMER_KEY));
 	
 	char *random_oauth_nonce = malloc(sizeof(char) * 32);
 	_generate_random_string(random_oauth_nonce, 32);
-	HTTPParameter *oauth_nonce_parameter = _create_parameter(strdup("oauth_nonce"), random_oauth_nonce);
+	HTTPParameter *oauth_nonce_parameter = _create_parameter(strdup("oauth_nonce"), strdup(random_oauth_nonce));
 	oauth_consumer_key_parameter->next_parameter = oauth_nonce_parameter;
+	free(random_oauth_nonce);
 	
 	HTTPParameter *oauth_signature_method_parameter = _create_parameter(strdup("oauth_signature_method"), strdup("HMAC-SHA1"));
 	oauth_nonce_parameter->previous_parameter = oauth_consumer_key_parameter;
@@ -101,6 +136,9 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	oauth_version_parameter->previous_parameter = oauth_signature_method_parameter;
 	
 	// OAUTH TOKEN IF OAuthAuthentication HAS ONE
+	if(current_access_token != NULL) {
+		
+	}
 	
 	HTTPParameter *current_parameter = http_connection->first_parameter;
 	HTTPParameter *last_configured_parameter = oauth_version_parameter;
@@ -112,7 +150,7 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 			((HTTPParameter *)last_configured_parameter->next_parameter)->key = strdup(current_parameter->key);
 			((HTTPParameter *)last_configured_parameter->next_parameter)->value = strdup(current_parameter->value);
 			((HTTPParameter *)last_configured_parameter->next_parameter)->previous_parameter = last_configured_parameter;
-			((HTTPParameter *)last_configured_parameter->next_parameter)->type  = HTTPParameterTypeIgnore;
+			((HTTPParameter *)last_configured_parameter->next_parameter)->type = HTTPParameterTypeIgnore;
 			last_configured_parameter = last_configured_parameter->next_parameter;
 		}
 		current_parameter = current_parameter->next_parameter;
@@ -127,7 +165,7 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	last_configured_parameter->next_parameter = NULL;
 	http_connection->first_parameter->previous_parameter = NULL;
 	
-	HTTPParameter *oauth_signature_parameter = _create_parameter(strdup("oauth_signature"), strdup(_html_escape_string(signature_string)));
+	HTTPParameter *oauth_signature_parameter = _create_parameter(strdup("oauth_signature"), _html_escape_string(strdup(signature_string)));
 	oauth_signature_parameter->type = HTTPParameterTypeAuthorizationHeader;
 	
 	last_configured_parameter->next_parameter = oauth_signature_parameter;
@@ -164,3 +202,129 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	
 	HTTPParameter_free(oauth_consumer_key_parameter, 1);
 }
+
+int TwitterAPI_oauth_request_token_url(char *request_token_url) {
+	HTTPConnection httpConnection;
+	HTTPConnection_initialize(&httpConnection);
+	
+	httpConnection.url = strdup("https://api.twitter.com/oauth/request_token");
+	httpConnection.connection_method = HTTPConnectionMethodPOST;
+	
+	httpConnection.first_parameter = malloc(sizeof(*httpConnection.first_parameter));
+	HTTPParameter_initialize(httpConnection.first_parameter);
+	httpConnection.first_parameter->key = strdup("oauth_callback");
+	httpConnection.first_parameter->value = strdup("oob");
+	httpConnection.first_parameter->type = HTTPParameterTypeAuthorizationHeader;
+	// printf("httpConnection.first_parameter: %i\n", httpConnection.first_parameter);
+	
+	// TwitterAPI_oauth_
+	TwitterAPI_oauth_authenticate_connection(&httpConnection);
+	
+	int status = HTTPConnection_perform_request(&httpConnection);
+	if(status != 0) return status;
+	
+	printf(" body: %s\n", httpConnection.response_buffer);
+	
+	current_oauth_token = malloc(sizeof(*current_oauth_token));
+	OAuthOAuthToken_initialize(current_oauth_token);
+	
+	int i = 0;
+	char *substring = strtok(httpConnection.response_buffer, "=&");
+	
+	while(substring != NULL)
+	{
+		if(i == 1) { // oauth_token
+			current_oauth_token->oauth_token = strdup(substring);
+		} else if(i == 3) { // oauth_token_secret
+			current_oauth_token->oauth_token_secret = strdup(substring);
+		}
+		
+		i += 1;
+		substring = strtok(NULL, "=&");
+	}
+	
+	if(i < 5) {
+		return -1;
+	}
+	
+	printf("oauth_token: %s\n", current_oauth_token->oauth_token);
+	printf("oauth_token_secret: %s\n", current_oauth_token->oauth_token_secret);
+	
+	HTTPConnection_free(&httpConnection);
+	
+	sprintf(request_token_url, "https://api.twitter.com/oauth/authenticate?oauth_token=%s", current_oauth_token->oauth_token);
+	
+	return 0;
+}
+
+int TwitterAPI_oauth_authorize_from_pin(char *pin) {
+	if(current_oauth_token->oauth_token_secret == NULL) {
+		return -1;
+	}
+	
+	current_oauth_token->oauth_verifier = strdup(pin);
+
+	HTTPConnection httpConnection;
+	HTTPConnection_initialize(&httpConnection);
+	
+	httpConnection.url = strdup("https://api.twitter.com/oauth/access_token");
+	httpConnection.connection_method = HTTPConnectionMethodPOST;
+	
+	httpConnection.first_parameter = malloc(sizeof(*httpConnection.first_parameter));
+	HTTPParameter_initialize(httpConnection.first_parameter);
+	httpConnection.first_parameter->key = strdup("oauth_verifier");
+	httpConnection.first_parameter->value = strdup(current_oauth_token->oauth_verifier);
+	// httpConnection.first_parameter->type = HTTPParameterTypeAuthorizationHeader;
+	
+	HTTPParameter *second_parameter = malloc(sizeof(*httpConnection.first_parameter));
+	HTTPParameter_initialize(second_parameter);
+	second_parameter->key = strdup("oauth_token");
+	second_parameter->value = strdup(current_oauth_token->oauth_token);
+	// second_parameter->type = HTTPParameterTypeAuthorizationHeader;
+	httpConnection.first_parameter->next_parameter = second_parameter;
+	
+	// printf("httpConnection.first_parameter: %i\n", httpConnection.first_parameter);
+	
+	// TwitterAPI_oauth_
+	TwitterAPI_oauth_authenticate_connection(&httpConnection);
+	
+	int status = HTTPConnection_perform_request(&httpConnection);
+	if(status != 0) return status;
+	
+	printf(" body: %s\n", httpConnection.response_buffer);
+	
+	// current_oauth_token = malloc(sizeof(*current_oauth_token));
+	// OAuthOAuthToken_initialize(current_oauth_token);
+	// 
+	// int i = 0;
+	// char *substring = strtok(httpConnection.response_buffer, "=&");
+	// 
+	// while(substring != NULL)
+	// {
+	// 	if(i == 1) { // oauth_token
+	// 		current_oauth_token->oauth_token = strdup(substring);
+	// 	} else if(i == 3) { // oauth_token_secret
+	// 		current_oauth_token->oauth_token_secret = strdup(substring);
+	// 	}
+	// 	
+	// 	i += 1;
+	// 	substring = strtok(NULL, "=&");
+	// }
+	// 
+	// if(i < 5) {
+	// 	return -1;
+	// }
+	// 
+	// printf("oauth_token: %s\n", current_oauth_token->oauth_token);
+	// printf("oauth_token_secret: %s\n", current_oauth_token->oauth_token_secret);
+	// 
+	HTTPConnection_free(&httpConnection);
+	// 
+	// sprintf(request_token_url, "https://api.twitter.com/oauth/authenticate?oauth_token=%s", current_oauth_token->oauth_token);
+
+
+	
+	
+	return 0;
+}
+
