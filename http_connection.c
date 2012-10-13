@@ -71,11 +71,9 @@ void HTTPParameter_initialize(HTTPParameter *http_parameter) {
 	http_parameter->value = NULL;
 	http_parameter->next_parameter = NULL;
 	http_parameter->previous_parameter = NULL;
-	printf("## INITIALIZING %i ##\n", http_parameter);
 }
 
 void _HTTPParameter_free(HTTPParameter *http_parameter) {
-	printf("## FREEING %i ##\n", http_parameter);
 	free(http_parameter->key);
 	free(http_parameter->value);
 	free(http_parameter);
