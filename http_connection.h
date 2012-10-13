@@ -7,7 +7,8 @@
 
 typedef enum {
 	HTTPParameterTypeParameter,
-	HTTPParameterTypeHeader
+	HTTPParameterTypeHeader,
+	HTTPParameterTypeAuthorizationHeader
 } HTTPParameterType;
 
 typedef struct {

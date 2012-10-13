@@ -30,8 +30,8 @@ char *_string_replace( const char *string, const char *substr, const char *repla
 }
 
 char *_html_escape_string(char *string) {
-	return _string_replace(_string_replace(_string_replace(_string_replace(_string_replace(_string_replace(_string_replace(string,
-           "%", "%25"), "#", "%23"), "/", "%2F"), ":", "%3A"), "?", "%3D"), "&", "%26"), " ", "%20"); // TODO: escape more stuff
+	return _string_replace(_string_replace(_string_replace(_string_replace(_string_replace(_string_replace(_string_replace(_string_replace(string,
+           "%", "%25"), "#", "%23"), "/", "%2F"), ":", "%3A"), "=", "%3D"), "&", "%26"), " ", "%20"), "?", "%3F"); // TODO: escape more stuff
 }
 
 size_t _write_data( void *buffer, size_t size, size_t nmemb, void *userp )
@@ -122,8 +122,9 @@ int HTTPConnection_perform_request(HTTPConnection *httpConnection) {
 			if(current_parameter->type == HTTPParameterTypeParameter) {
 				sprintf(current_parameter_string, "%s=%s&", current_parameter->key, current_parameter->value);
 				strcat(parameters_string, current_parameter_string);
-			} else {
+			} else if(current_parameter->type == HTTPParameterTypeHeader) {
 				sprintf(current_parameter_string, "%s: %s", current_parameter->key, current_parameter->value);
+				printf("current_parameter_string: %s\n", current_parameter_string);
 				headers = curl_slist_append(headers, current_parameter_string);
 			}
 			

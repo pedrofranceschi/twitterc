@@ -3,6 +3,7 @@ FILES += main.c
 FILES += http_connection.c
 FILES += twitter_api.c
 FILES += twitter_api_oauth.c
+FILES += crypto/*.c
 
 LIBRARIES += -lcurl
 LIBRARIES += -ljson

@@ -23,12 +23,13 @@ int main() {
 	
 	httpConnection.url = malloc(sizeof(char) * 100);
 	httpConnection.connection_method = HTTPConnectionMethodPOST;
-	strcpy(httpConnection.url, "http://api.twitter.com/oauth/request_token");
+	strcpy(httpConnection.url, "https://api.twitter.com/oauth/request_token");
 	
 	httpConnection.first_parameter = malloc(sizeof(*httpConnection.first_parameter));
 	HTTPParameter_initialize(httpConnection.first_parameter);
 	httpConnection.first_parameter->key = strdup("oauth_callback");
 	httpConnection.first_parameter->value = strdup("oob");
+	httpConnection.first_parameter->type = HTTPParameterTypeAuthorizationHeader;
 	
 	// TwitterAPI_oauth_
 	TwitterAPI_oauth_authenticate_connection(&httpConnection);
