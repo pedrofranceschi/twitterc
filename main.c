@@ -19,39 +19,39 @@ int main() {
 	// }	
 	
 	// while(1) {
-	// HTTPConnection httpConnection;
-	// HTTPConnection_initialize(&httpConnection);
+	// HTTPConnection http_connection;
+	// HTTPConnection_initialize(&http_connection);
 	// 
-	// httpConnection.url = malloc(sizeof(char) * 100);
-	// httpConnection.connection_method = HTTPConnectionMethodPOST;
-	// strcpy(httpConnection.url, "https://api.twitter.com/oauth/request_token");
+	// http_connection.url = malloc(sizeof(char) * 100);
+	// http_connection.connection_method = HTTPConnectionMethodPOST;
+	// strcpy(http_connection.url, "http://api.twitter.com/oauth/request_token");
 	// 
-	// httpConnection.first_parameter = malloc(sizeof(*httpConnection.first_parameter));
-	// HTTPParameter_initialize(httpConnection.first_parameter);
-	// httpConnection.first_parameter->key = strdup("oauth_callback");
-	// httpConnection.first_parameter->value = strdup("oob");
-	// httpConnection.first_parameter->type = HTTPParameterTypeAuthorizationHeader;
-	// // printf("httpConnection.first_parameter: %i\n", httpConnection.first_parameter);
+	// http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
+	// HTTPParameter_initialize(http_connection.first_parameter);
+	// http_connection.first_parameter->key = strdup("oauth_callback");
+	// http_connection.first_parameter->value = strdup("oob");
+	// http_connection.first_parameter->type = HTTPParameterTypeAuthorizationHeader;
+	// // printf("http_connection.first_parameter: %i\n", http_connection.first_parameter);
 	// 
 	// // TwitterAPI_oauth_
-	// TwitterAPI_oauth_authenticate_connection(&httpConnection, NULL);
+	// TwitterAPI_oauth_authenticate_connection(&http_connection, NULL);
 	// 
-	// int status = HTTPConnection_perform_request(&httpConnection);
+	// int status = HTTPConnection_perform_request(&http_connection);
 	// 
-	// printf(" body: %s\n", httpConnection.response_buffer);
-	// HTTPConnection_free(&httpConnection);
+	// printf(" body: %s\n", http_connection.response_buffer);
+	// HTTPConnection_free(&http_connection);
 	
 	char *url = malloc(sizeof(char) * 150);
 	int success = TwitterAPI_oauth_request_token_url(url);
 	printf("URL: %s\n", url);
 	free(url);
-
+	
 	char str[80];
 	int i;
-
+	
 	printf("Enter the PIN: ");
 	fgets(str, 10, stdin);
-
+	
 	/* remove newline, if present */
 	i = strlen(str)-1;
 	if( str[ i ] == '\n') 
@@ -59,7 +59,12 @@ int main() {
 	
 	TwitterAPI_oauth_authorize_from_pin(&str);
 	
-	// free(httpConnection);
+	// while(1) {
+		Tweet *first_tweet_timeline;	
+		success = TwitterAPI_home_timeline(&first_tweet_timeline);
+	// }
+	
+	// free(http_connection);
 	// sleep(5);
 	// }
 	

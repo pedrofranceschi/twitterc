@@ -21,3 +21,4 @@ void TwitterUser_free(TwitterUser *user);
 void Tweet_free(Tweet *tweet, int free_related_tweets_too);
 
 int TwitterAPI_search(char *search_term, Tweet **first_search_result);
+int TwitterAPI_home_timeline(Tweet **first_tweet);

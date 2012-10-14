@@ -1,7 +1,10 @@
 #include "http_connection.h"
+#include <openssl/engine.h>
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
 
-#define OAUTH_CONSUMER_KEY "CjNHZ0SUxT3mLfFnxAYeJA"
-#define OAUTH_CONSUMER_SECRET "5K2voGiykVvfZ5R5agH8MXxOAblqpLZ12JVzp8Fwr2w"
+#define OAUTH_CONSUMER_KEY "LPcrqudMsYNNVDeBnBzg"
+#define OAUTH_CONSUMER_SECRET "C56sD93snQCf2zyJZHb7HT2bbEkgwzgMipG2mlsfQ6c"
 
 typedef struct {
 	char *oauth_token;

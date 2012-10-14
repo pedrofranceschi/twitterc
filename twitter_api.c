@@ -56,18 +56,18 @@ void Tweet_free(Tweet *tweet, int free_related_tweets) {
 // twitter api methods
 
 int TwitterAPI_search(char *search_term, Tweet **first_search_result) {	
-	HTTPConnection httpConnection;
-	HTTPConnection_initialize(&httpConnection);
+	HTTPConnection http_connection;
+	HTTPConnection_initialize(&http_connection);
 	
 	char *search_api_url = malloc(sizeof(char) * 150);
 	strcpy(search_api_url, "http://search.twitter.com/search.json?q=");
 	strcat(search_api_url, _html_escape_string(search_term));
-	httpConnection.url = search_api_url;
+	http_connection.url = strdup(search_api_url);
 	
-	int status = HTTPConnection_perform_request(&httpConnection);
+	int status = HTTPConnection_perform_request(&http_connection);
 	if(status != 0) return status;
 	
-	struct json_object *json_parser = json_tokener_parse(httpConnection.response_buffer);
+	struct json_object *json_parser = json_tokener_parse(http_connection.response_buffer);
 	if(json_parser == NULL) return -1;
 	struct json_object *tweets = json_object_object_get(json_parser, "results");
 	if(tweets == NULL) return -2;
@@ -139,7 +139,40 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 	// json_object_put(tweets);
 	free(tweets);
 	free(json_parser);
-	HTTPConnection_free(&httpConnection);
+	HTTPConnection_free(&http_connection);
 	
 	return 0;
+}
+
+int TwitterAPI_home_timeline(Tweet **first_tweet) {
+	// http://api.twitter.com/1.1/statuses/home_timeline.json
+	
+	HTTPConnection http_connection;
+	HTTPConnection_initialize(&http_connection);
+	
+	// char *search_api_url = malloc(sizeof(char) * 150);
+	// strcpy(search_api_url, "http://search.twitter.com/search.json?q=");
+	// strcat(search_api_url, _html_escape_string(search_term));
+	http_connection.url = strdup("http://api.twitter.com/1.1/statuses/home_timeline.json");
+	
+	// http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
+	// HTTPParameter_initialize(http_connection.first_parameter);
+	// http_connection.first_parameter->key = strdup("count");
+	// http_connection.first_parameter->value = strdup("20");
+	
+	TwitterAPI_oauth_authenticate_connection(&http_connection);
+	
+	int status = HTTPConnection_perform_request(&http_connection);
+	if(status != 0) return status;
+	
+	printf(" body: %s\n", http_connection.response_buffer);
+	
+	// struct json_object *json_parser = json_tokener_parse(http_connection.response_buffer);
+	// if(json_parser == NULL) return -1;
+	// struct json_object *tweets = json_object_object_get(json_parser, "results");
+	// if(tweets == NULL) return -2;
+	// 
+	// Tweet *previous_tweet = NULL;
+	// *first_search_result = NULL;
+	
 }
