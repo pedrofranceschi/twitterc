@@ -132,7 +132,7 @@ int HTTPConnection_perform_request(HTTPConnection *http_connection) {
 				strcat(parameters_string, current_parameter_string);
 			} else if(current_parameter->type == HTTPParameterTypeHeader) {
 				sprintf(current_parameter_string, "%s: %s", current_parameter->key, current_parameter->value);
-				headers = curl_slist_append(headers, strdup(current_parameter_string));
+				headers = curl_slist_append(headers, current_parameter_string);
 			}
 			
 			free(current_parameter_string);

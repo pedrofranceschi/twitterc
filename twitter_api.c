@@ -19,6 +19,7 @@ void TwitterUser_initialize(TwitterUser *user) {
 void TwitterUser_free(TwitterUser *user) {
 	free(user->name);
 	free(user->screen_name);
+	free(user);
 }
 
 void Tweet_initialize(Tweet *tweet) {
@@ -62,7 +63,7 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 	char *search_api_url = malloc(sizeof(char) * 150);
 	strcpy(search_api_url, "http://search.twitter.com/search.json?q=");
 	strcat(search_api_url, _html_escape_string(search_term));
-	http_connection.url = strdup(search_api_url);
+	http_connection.url = search_api_url;
 	
 	int status = HTTPConnection_perform_request(&http_connection);
 	if(status != 0) return status;
@@ -135,9 +136,10 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 	
 	previous_tweet->next_tweet = NULL;
 	
-	free(search_api_url);
+	// free(search_api_url);
 	// json_object_put(tweets);
 	free(tweets);
+	json_object_put(json_parser);
 	free(json_parser);
 	HTTPConnection_free(&http_connection);
 	
@@ -166,6 +168,8 @@ int TwitterAPI_home_timeline(Tweet **first_tweet) {
 	if(status != 0) return status;
 	
 	printf(" body: %s\n", http_connection.response_buffer);
+	
+	HTTPConnection_free(&http_connection);
 	
 	// struct json_object *json_parser = json_tokener_parse(http_connection.response_buffer);
 	// if(json_parser == NULL) return -1;

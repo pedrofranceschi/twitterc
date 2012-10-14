@@ -108,11 +108,11 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 	// 	return NULL;
 	// }
 	
+	free(key_string);
 	free(signature_base_string);
 	
-	char *final_signature = malloc(sizeof(char) * 500);
+	char *final_signature = malloc(sizeof(char) * 100);
 	b64_encode(&sha1_result, final_signature);
-	free(key_string);
 	
 	return final_signature;
 }
@@ -182,8 +182,10 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 		http_connection->first_parameter->previous_parameter = NULL;
 	}
 	
-	HTTPParameter *oauth_signature_parameter = _create_parameter(strdup("oauth_signature"), _html_escape_string(strdup(signature_string)));
+	HTTPParameter *oauth_signature_parameter = _create_parameter(strdup("oauth_signature"), _html_escape_string(signature_string));
 	oauth_signature_parameter->type = HTTPParameterTypeAuthorizationHeader;
+	
+	free(signature_string);
 	
 	last_configured_parameter->next_parameter = oauth_signature_parameter;
 	oauth_signature_parameter->previous_parameter = last_configured_parameter;

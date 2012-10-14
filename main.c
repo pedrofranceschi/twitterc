@@ -24,7 +24,7 @@ int main() {
 	// 
 	// http_connection.url = malloc(sizeof(char) * 100);
 	// http_connection.connection_method = HTTPConnectionMethodPOST;
-	// strcpy(http_connection.url, "http://api.twitter.com/oauth/request_token");
+	// strcpy(http_connection.url, "https://api.twitter.com/oauth/request_token");
 	// 
 	// http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
 	// HTTPParameter_initialize(http_connection.first_parameter);
@@ -63,6 +63,8 @@ int main() {
 		Tweet *first_tweet_timeline;	
 		success = TwitterAPI_home_timeline(&first_tweet_timeline);
 	// }
+	
+	
 	
 	// free(http_connection);
 	// sleep(5);
