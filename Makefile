@@ -7,7 +7,7 @@ FILES += crypto/*.c
 
 LIBRARIES += -lcurl
 LIBRARIES += -ljson
-LIBRARIES += -lcrypto
+# LIBRARIES += -lcrypto
 
 EXECUTABLE = twitterc
 

@@ -1,7 +1,7 @@
 #include "http_connection.h"
-#include <openssl/engine.h>
-#include <openssl/hmac.h>
-#include <openssl/evp.h>
+// #include <openssl/engine.h>
+// #include <openssl/hmac.h>
+// #include <openssl/evp.h>
 #include <wordexp.h>
 
 #define OAUTH_CONSUMER_KEY "LPcrqudMsYNNVDeBnBzg"

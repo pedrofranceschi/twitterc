@@ -64,8 +64,10 @@ int main() {
 		TwitterAPI_oauth_authorize_from_pin(&str);
 	}
 	
-	Tweet *first_tweet_timeline;	
-	int success = TwitterAPI_home_timeline(&first_tweet_timeline);
+	// while(1) {
+		Tweet *first_tweet_timeline;	
+		int success = TwitterAPI_home_timeline(&first_tweet_timeline);
+	// }
 	
 	// 
 	// // while(1) {
