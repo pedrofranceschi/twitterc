@@ -53,6 +53,78 @@ void OAuthAccessToken_free(OAuthAccessToken *access_token) {
 	free(access_token->access_token_secret);
 }
 
+int OAuthAccessToken_load_from_file() {
+	wordexp_t p;
+    char **w;
+    int i;
+
+    wordexp(ACCESS_TOKEN_FILE, &p, 0);
+    w = p.we_wordv;
+	FILE *file_descriptor = fopen(w[0], "rt");
+	wordfree(&p);
+		
+	if(file_descriptor == NULL) {
+		return -1;
+	}
+	
+	char line[80];
+	int line_number = 0;
+	
+	if(current_access_token) {
+		OAuthAccessToken_free(current_access_token);
+	}
+	
+	current_access_token = malloc(sizeof(*current_access_token));
+
+	while(fgets(line, 80, file_descriptor) != NULL)
+	{		
+		if(line[strlen(line) - 1] == '\n') {
+			line[strlen(line) - 1] = '\0';
+		}
+		 
+		if(line_number == 0) {
+			current_access_token->access_token = strdup(line);
+		} else {
+			current_access_token->access_token_secret = strdup(line);
+		}
+		
+		line_number += 1;
+	}
+	
+	fclose(file_descriptor);  /* close the file prior to exiting the routine */
+	
+	if(current_access_token->access_token == NULL && current_access_token->access_token_secret == NULL) {
+		return -2;
+	}
+	
+	return 0;
+}
+
+int OAuthAccessToken_save_current_to_file() {
+	wordexp_t p;
+	char **w;
+	int i;
+
+	wordexp(ACCESS_TOKEN_FILE, &p, 0);
+	w = p.we_wordv;
+	FILE *file_descriptor = fopen(w[0], "wt");
+	wordfree(&p);
+
+	if(file_descriptor == NULL) {
+		return -1;
+	}
+
+	if(!current_access_token) {
+		return -2;
+	}
+
+	fprintf(file_descriptor, "%s\n", current_access_token->access_token); /*writes*/ 
+	fprintf(file_descriptor, "%s", current_access_token->access_token_secret); /*writes*/ 
+	fclose(file_descriptor); /*done!*/
+
+	return 0;
+}
+
 char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPConnection *http_connection) {
 	int parameters_count = 0;
 	HTTPParameter *current_parameter = first_parameter;
@@ -339,6 +411,8 @@ int TwitterAPI_oauth_authorize_from_pin(char *pin) {
 	
 	printf("access_token: %s\n", current_access_token->access_token);
 	printf("access_token_secret: %s\n", current_access_token->access_token_secret);
+	
+	OAuthAccessToken_save_current_to_file();
 	
 	// current_oauth_token = malloc(sizeof(*current_oauth_token));
 	// OAuthOAuthToken_initialize(current_oauth_token);

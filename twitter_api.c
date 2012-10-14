@@ -149,6 +149,9 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 int TwitterAPI_home_timeline(Tweet **first_tweet) {
 	// http://api.twitter.com/1.1/statuses/home_timeline.json
 	
+	printf("access_token: %s\n", current_access_token->access_token);
+	printf("access_token_secret: %s\n", current_access_token->access_token_secret);
+	
 	HTTPConnection http_connection;
 	HTTPConnection_initialize(&http_connection);
 	
