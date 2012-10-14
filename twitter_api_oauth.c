@@ -77,21 +77,21 @@ int OAuthAccessToken_load_from_file() {
 	current_access_token = malloc(sizeof(*current_access_token));
 
 	while(fgets(line, 80, file_descriptor) != NULL)
-	{		
+	{
 		if(line[strlen(line) - 1] == '\n') {
 			line[strlen(line) - 1] = '\0';
 		}
-		 
+
 		if(line_number == 0) {
 			current_access_token->access_token = strdup(line);
 		} else {
 			current_access_token->access_token_secret = strdup(line);
 		}
-		
+
 		line_number += 1;
 	}
 	
-	fclose(file_descriptor);  /* close the file prior to exiting the routine */
+	fclose(file_descriptor);
 	
 	if(current_access_token->access_token == NULL && current_access_token->access_token_secret == NULL) {
 		return -2;
@@ -118,9 +118,9 @@ int OAuthAccessToken_save_current_to_file() {
 		return -2;
 	}
 
-	fprintf(file_descriptor, "%s\n", current_access_token->access_token); /*writes*/ 
-	fprintf(file_descriptor, "%s", current_access_token->access_token_secret); /*writes*/ 
-	fclose(file_descriptor); /*done!*/
+	fprintf(file_descriptor, "%s\n", current_access_token->access_token);
+	fprintf(file_descriptor, "%s", current_access_token->access_token_secret);
+	fclose(file_descriptor);
 
 	return 0;
 }
