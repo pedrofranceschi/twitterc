@@ -11,6 +11,7 @@ int main() {
 	// 	printf("current tweet: %s\n", current_tweet->text);
 	// 	printf("date: %s", asctime(current_tweet->created_at));
 	// 	printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->user_id);
+	//  printf(" id: %s\n", current_tweet->id_str);
 	// 	current_tweet = current_tweet->next_tweet;
 	// }
 	// 
@@ -64,10 +65,17 @@ int main() {
 		TwitterAPI_oauth_authorize_from_pin(&str);
 	}
 	
-	// while(1) {
-		Tweet *first_tweet_timeline;	
-		int success = TwitterAPI_home_timeline(&first_tweet_timeline);
-	// }
+	Tweet *first_tweet;	
+	int success = TwitterAPI_home_timeline(&first_tweet);
+	
+	Tweet *current_tweet = first_tweet;
+	while(current_tweet != NULL) {
+		printf("current tweet: %s\n", current_tweet->text);
+		printf("date: %s", asctime(current_tweet->created_at));
+		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->user_id);
+	 	printf(" id: %s\n", current_tweet->id_str);
+		current_tweet = current_tweet->next_tweet;
+	}
 	
 	// 
 	// // while(1) {

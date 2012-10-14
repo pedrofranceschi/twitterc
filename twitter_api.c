@@ -87,14 +87,18 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 		struct json_object *current_tweet_text_json = json_object_object_get(current_tweet_json, "text");
 		char *current_tweet_text = json_object_get_string(current_tweet_text_json);
 		current_tweet->text = (char *)strdup(current_tweet_text);
-		free(current_tweet_text);
-		free(current_tweet_text_json);
+		json_object_put(current_tweet_text_json);
 		
 		struct json_object *current_tweet_created_at_json = json_object_object_get(current_tweet_json, "created_at");
 		char *current_tweet_created_at = json_object_get_string(current_tweet_created_at_json);
 		current_tweet->created_at = _date_from_twitter_date(current_tweet_created_at);
-		free(current_tweet_created_at_json);
-		free(current_tweet_created_at);
+		json_object_put(current_tweet_created_at_json);
+		
+		printf(" will get id_str\n");
+		struct json_object *current_tweet_id_str_json = json_object_object_get(current_tweet_json, "id_str");
+		char *current_tweet_id_str = json_object_get_string(current_tweet_id_str_json);
+		current_tweet->id_str = strdup(current_tweet_id_str);
+		json_object_put(current_tweet_id_str_json);
 		
 		
 		TwitterUser *current_tweet_author = malloc(sizeof(*current_tweet_author));
@@ -103,21 +107,18 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 		struct json_object *current_tweet_author_name_json = json_object_object_get(current_tweet_json, "from_user_name");
 		char *current_tweet_author_name = json_object_get_string(current_tweet_author_name_json);
 		current_tweet_author->name = (char *)strdup(current_tweet_author_name);
-		free(current_tweet_author_name_json);
-		free(current_tweet_author_name);
+		json_object_put(current_tweet_author_name_json);
 		
 		struct json_object *current_tweet_author_screen_name_json = json_object_object_get(current_tweet_json, "from_user");
 		char *current_tweet_author_screen_name = json_object_get_string(current_tweet_author_screen_name_json);
 		current_tweet_author->screen_name = (char *)strdup(current_tweet_author_screen_name);
-		free(current_tweet_author_screen_name_json);
-		free(current_tweet_author_screen_name);
+		json_object_put(current_tweet_author_screen_name_json);
 		
 		struct json_object *current_tweet_author_id_json = json_object_object_get(current_tweet_json, "from_user_id");
 		current_tweet_author->user_id = json_object_get_int(current_tweet_author_id_json);
-		free(current_tweet_author_id_json);
+		json_object_put(current_tweet_author_id_json);
 		
 		current_tweet->author = current_tweet_author;
-		
 		
 		if(*first_search_result == NULL) {
 			current_tweet->previous_tweet = NULL;
@@ -131,17 +132,101 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 		
 		// json_object_put(current_tweet_json);
 		// json_object_put(current_tweet_text_json);
-		free(current_tweet_json);
+		json_object_put(current_tweet_json);
+	}
+	
+	previous_tweet->next_tweet = NULL;
+	
+	// printf("body: %s\n", http_connection.response_buffer);
+	
+	// free(search_api_url);
+	json_object_put(tweets);
+	json_object_put(json_parser);
+	// free(tweets);
+	// free(json_parser);
+	HTTPConnection_free(&http_connection);
+	
+	return 0;
+}
+
+int _parse_timeline_from_json(char *json_response, Tweet **first_tweet) {
+	struct json_object *json_parser = json_tokener_parse(json_response);
+	
+	Tweet *previous_tweet = NULL;
+	*first_tweet = NULL;
+	
+	if(json_parser == NULL) return -1;
+	if(json_object_get_type(json_parser) != json_type_array) return -2;
+	
+	int i;
+	
+	for(i = 0; i < json_object_array_length(json_parser); i++) {
+		Tweet *current_tweet = malloc(sizeof(*current_tweet));
+		Tweet_initialize(current_tweet);
+		
+		struct json_object *current_tweet_json = json_object_array_get_idx(json_parser, i);
+		
+		struct json_object *current_tweet_text_json = json_object_object_get(current_tweet_json, "text");
+		char *current_tweet_text = json_object_get_string(current_tweet_text_json);
+		current_tweet->text = (char *)strdup(current_tweet_text);
+		json_object_put(current_tweet_text_json);
+		
+		struct json_object *current_tweet_created_at_json = json_object_object_get(current_tweet_json, "created_at");
+		char *current_tweet_created_at = json_object_get_string(current_tweet_created_at_json);
+		current_tweet->created_at = _date_from_twitter_date(current_tweet_created_at);
+		json_object_put(current_tweet_created_at_json);
+		
+		struct json_object *current_tweet_id_str_json = json_object_object_get(current_tweet_json, "id_str");
+		char *current_tweet_id_str = json_object_get_string(current_tweet_id_str_json);
+		current_tweet->id_str = strdup(current_tweet_id_str);
+		json_object_put(current_tweet_id_str_json);
+		
+		TwitterUser *current_tweet_author = malloc(sizeof(*current_tweet_author));
+		TwitterUser_initialize(current_tweet_author);
+		
+		struct json_object *current_tweet_user_json = json_object_object_get(current_tweet_json, "user");
+		
+		struct json_object *current_tweet_author_name_json = json_object_object_get(current_tweet_user_json, "name");
+		char *current_tweet_author_name = json_object_get_string(current_tweet_author_name_json);
+		current_tweet_author->name = (char *)strdup(current_tweet_author_name);
+		json_object_put(current_tweet_author_name_json);
+		
+		struct json_object *current_tweet_author_screen_name_json = json_object_object_get(current_tweet_user_json, "screen_name");
+		char *current_tweet_author_screen_name = json_object_get_string(current_tweet_author_screen_name_json);
+		current_tweet_author->screen_name = (char *)strdup(current_tweet_author_screen_name);
+		json_object_put(current_tweet_author_screen_name_json);
+		
+		struct json_object *current_tweet_author_id_json = json_object_object_get(current_tweet_user_json, "id");
+		current_tweet_author->user_id = json_object_get_int(current_tweet_author_id_json);
+		json_object_put(current_tweet_author_id_json);
+		
+		json_object_put(current_tweet_user_json);
+		
+		current_tweet->author = current_tweet_author;
+		
+		if(*first_tweet == NULL) {
+			current_tweet->previous_tweet = NULL;
+			*first_tweet = current_tweet;
+			previous_tweet = *first_tweet;
+		} else {
+			previous_tweet->next_tweet = current_tweet;
+			current_tweet->previous_tweet = previous_tweet;
+			previous_tweet = current_tweet;
+		}
+		
+		// json_object_put(current_tweet_json);
+		// json_object_put(current_tweet_text_json);
+		json_object_put(current_tweet_json);
 	}
 	
 	previous_tweet->next_tweet = NULL;
 	
 	// free(search_api_url);
 	// json_object_put(tweets);
-	free(tweets);
+	// free(tweets);
+	// json_object_put(json_parser);
+	// free(json_parser);
 	json_object_put(json_parser);
-	free(json_parser);
-	HTTPConnection_free(&http_connection);
 	
 	return 0;
 }
@@ -172,14 +257,9 @@ int TwitterAPI_home_timeline(Tweet **first_tweet) {
 	
 	printf(" body: %s\n", http_connection.response_buffer);
 	
+	status = _parse_timeline_from_json(http_connection.response_buffer, first_tweet);
+	
 	HTTPConnection_free(&http_connection);
 	
-	// struct json_object *json_parser = json_tokener_parse(http_connection.response_buffer);
-	// if(json_parser == NULL) return -1;
-	// struct json_object *tweets = json_object_object_get(json_parser, "results");
-	// if(tweets == NULL) return -2;
-	// 
-	// Tweet *previous_tweet = NULL;
-	// *first_search_result = NULL;
-	
+	return status;	
 }

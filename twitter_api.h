@@ -13,6 +13,7 @@ typedef struct {
 	char *text;
 	TwitterUser *author;
 	struct tm *created_at;
+	char *id_str;
 	struct Tweet *next_tweet, *previous_tweet;
 } Tweet;
 
