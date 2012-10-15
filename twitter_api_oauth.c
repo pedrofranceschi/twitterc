@@ -160,7 +160,7 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 	sprintf(signature_base_string, "%s&%s&%s", (http_connection->connection_method == HTTPConnectionMethodPOST ? "POST" : "GET"), _html_escape_string(http_connection->url), _html_escape_string(signature_base_string));
 	
 	unsigned char sha1_result[30];// = malloc(sizeof(char) * 32);
-	char *key_string = malloc(sizeof(char) * 500);
+	char *key_string = malloc(sizeof(char) * 200);
 	if(current_oauth_token) {
 		sprintf(key_string, "%s&%s", OAUTH_CONSUMER_SECRET, current_oauth_token->oauth_token_secret);
 	} else if(current_access_token) {
@@ -169,7 +169,7 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 		sprintf(key_string, "%s&", OAUTH_CONSUMER_SECRET);
 	}
 	
-	unsigned int md_len = 32;
+	unsigned int md_len = 30;
 	
 	// result = HMAC(EVP_sha256(), key, 4, data, 28, NULL, NULL);
 	int success = hmac_sha1(key_string, strlen(key_string), signature_base_string, strlen(signature_base_string), sha1_result);

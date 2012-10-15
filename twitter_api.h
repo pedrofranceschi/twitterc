@@ -11,9 +11,9 @@ typedef struct {
 
 typedef struct {
 	char *text;
+	char *id_str;
 	TwitterUser *author;
 	struct tm *created_at;
-	char *id_str;
 	struct Tweet *next_tweet, *previous_tweet;
 } Tweet;
 
