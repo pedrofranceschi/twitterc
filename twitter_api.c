@@ -49,13 +49,14 @@ time_t _date_from_twitter_date(char *twitter_date, int is_search) {
 
 void TwitterUser_initialize(TwitterUser *user) {
 	user->name = NULL;
+	user->id_str = NULL;
 	user->screen_name = NULL;
-	user->user_id = 0;
 }
 
 void TwitterUser_free(TwitterUser *user) {
 	free(user->name);
 	free(user->screen_name);
+	free(user->id_str);
 	free(user);
 }
 
@@ -155,7 +156,8 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result) {
 		// json_object_put(current_tweet_author_screen_name_json);
 		
 		struct json_object *current_tweet_author_id_json = json_object_object_get(current_tweet_json, "from_user_id");
-		current_tweet_author->user_id = (int)json_object_get_int(current_tweet_author_id_json);
+		char *current_tweet_author_id = (char *)json_object_get_string(current_tweet_author_id_json);
+		current_tweet_author->id_str = (char *)strdup(current_tweet_author_id);
 		// json_object_put(current_tweet_author_id_json);
 		
 		current_tweet->author = current_tweet_author;
@@ -238,7 +240,8 @@ int _parse_timeline_from_json(char *json_response, Tweet **first_tweet) {
 		// json_object_put(current_tweet_author_screen_name_json);
 		
 		struct json_object *current_tweet_author_id_json = json_object_object_get(current_tweet_user_json, "id_str");
-		current_tweet_author->user_id = (int)json_object_get_int(current_tweet_author_id_json);
+		char *current_tweet_author_id = (char *)json_object_get_string(current_tweet_author_id_json);
+		current_tweet_author->id_str = (char *)strdup(current_tweet_author_id);
 		// json_object_put(current_tweet_author_id_json);
 		
 		current_tweet->author = current_tweet_author;
@@ -307,11 +310,9 @@ int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user) {
 	
 	http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
 	HTTPParameter_initialize(http_connection.first_parameter);
-	if(user->user_id != NULL) {
+	if(user->id_str != NULL) {
 		http_connection.first_parameter->key = strdup("user_id");
-		char *id_str = malloc(sizeof(char) * 20);
-		sprintf(id_str, "%i", user->user_id);
-		http_connection.first_parameter->value = id_str;
+		http_connection.first_parameter->value = strdup(user->id_str);
 	} else if(user->screen_name != NULL) {
 		http_connection.first_parameter->key = strdup("screen_name");
 		http_connection.first_parameter->value = strdup(user->screen_name);
@@ -326,6 +327,37 @@ int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user) {
 	if(status != 0) return status;
 	
 	status = _parse_timeline_from_json(http_connection.response_buffer, first_tweet);
+	HTTPConnection_free(&http_connection);
+	return status;
+}
+
+int TwitterAPI_statuses_update(char *text, Tweet *in_reply_to_tweet) {
+	if(strlen(text) > 140) {
+		return -1;
+	}
+	
+	HTTPConnection http_connection;
+	HTTPConnection_initialize(&http_connection);
+	http_connection.url = strdup("https://api.twitter.com/1.1/statuses/update.json");
+	http_connection.connection_method = HTTPConnectionMethodPOST;
+	
+	http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
+	HTTPParameter_initialize(http_connection.first_parameter);
+	http_connection.first_parameter->key = strdup("status");
+	http_connection.first_parameter->value = strdup(text);
+	
+	if(in_reply_to_tweet != NULL && in_reply_to_tweet->id_str != NULL) {
+		HTTPParameter *current_parameter = http_connection.first_parameter->next_parameter;
+		current_parameter = malloc(sizeof(*current_parameter));
+		current_parameter->key = strdup("in_reply_to_status_id");
+		current_parameter->value = strdup(in_reply_to_tweet->id_str);
+	}
+	
+	TwitterAPI_oauth_authenticate_connection(&http_connection);
+	
+	int status = HTTPConnection_perform_request(&http_connection);
+	if(status != 0) return status;
+	
 	HTTPConnection_free(&http_connection);
 	return status;
 }

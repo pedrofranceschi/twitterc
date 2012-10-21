@@ -47,7 +47,7 @@ int main() {
 	
 	if(access_token_load_error != 0) { // error
 		char *url = (char *)malloc(sizeof(char) * 150);
-		int success = TwitterAPI_oauth_request_token_url(url);
+		int error = TwitterAPI_oauth_request_token_url(url);
 		printf("URL: %s\n", url);
 		free(url);
 		
@@ -65,12 +65,12 @@ int main() {
 		TwitterAPI_oauth_authorize_from_pin(str);
 	}
 	
-	TwitterUser twitter_user;
-	TwitterUser_initialize(&twitter_user);
-	twitter_user.screen_name = strdup("pedroh96");
+	// TwitterUser twitter_user;
+	// TwitterUser_initialize(&twitter_user);
+	// twitter_user.screen_name = strdup("pedroh96");
 	
 	Tweet *first_tweet;
-	int success = TwitterAPI_user_timeline(&first_tweet, &twitter_user);
+	int error = TwitterAPI_home_timeline(&first_tweet);
 	
 	Tweet *current_tweet = first_tweet;
 	while(current_tweet != NULL) {
@@ -78,10 +78,13 @@ int main() {
 		char *date_str = _relative_time(current_tweet->created_at);
 		printf("date (%i): %s ago\n", current_tweet->created_at, date_str);
 		free(date_str);
-		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->user_id);
+		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->id_str);
 		printf(" id: %s\n\n", current_tweet->id_str);
 		current_tweet = (Tweet *)current_tweet->next_tweet;
 	}
+	
+	// error = TwitterAPI_statuses_update("Testando...", NULL);
+	// printf("error: %i\n", error);
 	
 	// 
 	// // while(1) {

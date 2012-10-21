@@ -6,7 +6,7 @@
 typedef struct {
 	char *name;
 	char *screen_name;
-	int user_id;
+	char *id_str;
 } TwitterUser;
 
 typedef struct {
@@ -26,3 +26,4 @@ int TwitterAPI_search(char *search_term, Tweet **first_search_result);
 int TwitterAPI_home_timeline(Tweet **first_tweet);
 int TwitterAPI_mentions_timeline(Tweet **first_tweet);
 int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user);
+int TwitterAPI_statuses_update(char *text, Tweet *in_reply_to_tweet);
