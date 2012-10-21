@@ -280,8 +280,6 @@ int TwitterAPI_home_timeline(Tweet **first_tweet) {
 	int status = HTTPConnection_perform_request(&http_connection);
 	if(status != 0) return status;
 	
-	printf(" body: %s\n", http_connection.response_buffer);
-	
 	status = _parse_timeline_from_json(http_connection.response_buffer, first_tweet);
 	HTTPConnection_free(&http_connection);
 	return status;
@@ -296,24 +294,36 @@ int TwitterAPI_mentions_timeline(Tweet **first_tweet) {
 	int status = HTTPConnection_perform_request(&http_connection);
 	if(status != 0) return status;
 	
-	printf(" body: %s\n", http_connection.response_buffer);
-	
 	status = _parse_timeline_from_json(http_connection.response_buffer, first_tweet);
 	// printf(" got \n");
 	HTTPConnection_free(&http_connection);
 	return status;
 }
 
-int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user) {	
+int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user) {
 	HTTPConnection http_connection;
 	HTTPConnection_initialize(&http_connection);
 	http_connection.url = strdup("https://api.twitter.com/1.1/statuses/user_timeline.json");
+	
+	http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
+	HTTPParameter_initialize(http_connection.first_parameter);
+	if(user->user_id != NULL) {
+		http_connection.first_parameter->key = strdup("user_id");
+		char *id_str = malloc(sizeof(char) * 20);
+		sprintf(id_str, "%i", user->user_id);
+		http_connection.first_parameter->value = id_str;
+	} else if(user->screen_name != NULL) {
+		http_connection.first_parameter->key = strdup("screen_name");
+		http_connection.first_parameter->value = strdup(user->screen_name);
+	} else {
+		HTTPConnection_free(&http_connection);
+		return -1;
+	}
+	
 	TwitterAPI_oauth_authenticate_connection(&http_connection);
 	
 	int status = HTTPConnection_perform_request(&http_connection);
 	if(status != 0) return status;
-	
-	printf(" body: %s\n", http_connection.response_buffer);
 	
 	status = _parse_timeline_from_json(http_connection.response_buffer, first_tweet);
 	HTTPConnection_free(&http_connection);

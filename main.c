@@ -65,8 +65,12 @@ int main() {
 		TwitterAPI_oauth_authorize_from_pin(str);
 	}
 	
-	Tweet *first_tweet;	
-	int success = TwitterAPI_mentions_timeline(&first_tweet);
+	TwitterUser twitter_user;
+	TwitterUser_initialize(&twitter_user);
+	twitter_user.screen_name = strdup("pedroh96");
+	
+	Tweet *first_tweet;
+	int success = TwitterAPI_user_timeline(&first_tweet, &twitter_user);
 	
 	Tweet *current_tweet = first_tweet;
 	while(current_tweet != NULL) {
@@ -75,7 +79,7 @@ int main() {
 		printf("date (%i): %s ago\n", current_tweet->created_at, date_str);
 		free(date_str);
 		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->user_id);
-	 	printf(" id: %s\n\n", current_tweet->id_str);
+		printf(" id: %s\n\n", current_tweet->id_str);
 		current_tweet = (Tweet *)current_tweet->next_tweet;
 	}
 	
