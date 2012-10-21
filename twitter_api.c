@@ -209,15 +209,11 @@ int _parse_timeline_from_json(char *json_response, Tweet **first_tweet) {
 		current_tweet->text = (char *)strdup(current_tweet_text);
 		// json_object_put(current_tweet_text_json);
 		
-		printf("1\n");
-		
 		struct json_object *current_tweet_created_at_json = json_object_object_get(current_tweet_json, "created_at");
 		char *current_tweet_created_at = strdup((char *)json_object_get_string(current_tweet_created_at_json));
 		current_tweet->created_at = _date_from_twitter_date(current_tweet_created_at, 0);
 		free(current_tweet_created_at);
 		// json_object_put(current_tweet_created_at_json);
-		
-		printf("2 \n");
 		
 		struct json_object *current_tweet_id_str_json = json_object_object_get(current_tweet_json, "id_str");
 		char *current_tweet_id_str = (char *)json_object_get_string(current_tweet_id_str_json);
@@ -225,14 +221,11 @@ int _parse_timeline_from_json(char *json_response, Tweet **first_tweet) {
 		current_tweet->id_str = strdup(current_tweet_id_str);
 		// json_object_put(current_tweet_id_str_json);
 		
-		printf("3\n");
 		
 		TwitterUser *current_tweet_author = malloc(sizeof(*current_tweet_author));
 		TwitterUser_initialize(current_tweet_author);
 		
 		struct json_object *current_tweet_user_json = json_object_object_get(current_tweet_json, "user");
-		
-		printf("4\n");
 		
 		struct json_object *current_tweet_author_name_json = json_object_object_get(current_tweet_user_json, "name");
 		char *current_tweet_author_name = (char *)json_object_get_string(current_tweet_author_name_json);
