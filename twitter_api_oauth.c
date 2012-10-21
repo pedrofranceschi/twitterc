@@ -130,7 +130,7 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 	HTTPParameter *current_parameter = first_parameter;
 	while(current_parameter != NULL) {
 		parameters_count++;
-		current_parameter = current_parameter->next_parameter;
+		current_parameter = (HTTPParameter *)current_parameter->next_parameter;
 	}
 	
 	HTTPParameter http_parameters[parameters_count];
@@ -140,7 +140,7 @@ char *_generate_signature_for_parameters(HTTPParameter *first_parameter, HTTPCon
 	while(current_parameter != NULL) {
 		http_parameters[i] = *current_parameter;
 		i++;
-		current_parameter = current_parameter->next_parameter;
+		current_parameter = (HTTPParameter *)current_parameter->next_parameter;
 	}
 	
 	// sort parameters alphabetically
@@ -212,8 +212,6 @@ void TwitterAPI_oauth_authenticate_connection(HTTPConnection *http_connection) {
 	oauth_timestamp_parameter->previous_parameter = oauth_signature_method_parameter;
 	oauth_timestamp_parameter->next_parameter = oauth_version_parameter;
 	oauth_version_parameter->previous_parameter = oauth_signature_method_parameter;
-	
-	// OAUTH TOKEN IF OAuthAuthentication HAS ONE
 	
 	HTTPParameter *current_parameter = http_connection->first_parameter;
 	HTTPParameter *last_configured_parameter = oauth_version_parameter;

@@ -1,6 +1,6 @@
 #include "http_connection.h"
 
-char *_string_replace( const char *string, const char *substr, const char *replacement ){
+char *_string_replace(char *string, const char *substr, const char *replacement){
 	char *tok = NULL;
 	char *newstr = NULL;
 	char *oldstr = NULL;
@@ -16,7 +16,7 @@ char *_string_replace( const char *string, const char *substr, const char *repla
 	/*failed to alloc mem, free old string and return NULL */
 		if ( newstr == NULL ){
 			free (oldstr);
-			return string;
+			return (char *)string;
 		}
 		memcpy ( newstr, oldstr, tok - oldstr );
 		memcpy ( newstr + (tok - oldstr), replacement, strlen ( replacement ) );
@@ -92,7 +92,7 @@ void HTTPParameter_free(HTTPParameter *http_parameter, int free_related_params) 
 	if(free_related_params != 0) {
 		HTTPParameter *current_parameter = http_parameter;
 		while(current_parameter != NULL) {
-			HTTPParameter *new_current_parameter = current_parameter->next_parameter;
+			HTTPParameter *new_current_parameter = (HTTPParameter *)current_parameter->next_parameter;
 			_HTTPParameter_free(current_parameter);
 			current_parameter = new_current_parameter;
 		}
@@ -136,7 +136,7 @@ int HTTPConnection_perform_request(HTTPConnection *http_connection) {
 			}
 			
 			free(current_parameter_string);
-			current_parameter = current_parameter->next_parameter;
+			current_parameter = (HTTPParameter *)current_parameter->next_parameter;
 		}
 		
 		parameters_string[strlen(parameters_string) - 1] = '\0';

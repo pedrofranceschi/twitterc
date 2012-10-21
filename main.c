@@ -40,12 +40,13 @@ int main() {
 	// 
 	// printf(" body: %s\n", http_connection.response_buffer);
 	// HTTPConnection_free(&http_connection);
+
 	
 	int access_token_load_error = OAuthAccessToken_load_from_file();
 	printf("access_token_load_error: %i\n", access_token_load_error);
 	
 	if(access_token_load_error != 0) { // error
-		char *url = malloc(sizeof(char) * 150);
+		char *url = (char *)malloc(sizeof(char) * 150);
 		int success = TwitterAPI_oauth_request_token_url(url);
 		printf("URL: %s\n", url);
 		free(url);
@@ -61,7 +62,7 @@ int main() {
 		if( str[ i ] == '\n') 
 			str[i] = '\0';
 		
-		TwitterAPI_oauth_authorize_from_pin(&str);
+		TwitterAPI_oauth_authorize_from_pin(str);
 	}
 	
 	Tweet *first_tweet;	
@@ -70,10 +71,12 @@ int main() {
 	Tweet *current_tweet = first_tweet;
 	while(current_tweet != NULL) {
 		printf("current tweet: %s\n", current_tweet->text);
-		printf("date: %s", asctime(current_tweet->created_at));
+		char *date_str = _relative_time(current_tweet->created_at);
+		printf("date (%i): %s ago\n", current_tweet->created_at, date_str);
+		free(date_str);
 		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->user_id);
-	 	printf(" id: %s\n", current_tweet->id_str);
-		current_tweet = current_tweet->next_tweet;
+	 	printf(" id: %s\n\n", current_tweet->id_str);
+		current_tweet = (Tweet *)current_tweet->next_tweet;
 	}
 	
 	// 

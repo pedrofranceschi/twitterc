@@ -13,13 +13,16 @@ typedef struct {
 	char *text;
 	char *id_str;
 	TwitterUser *author;
-	struct tm *created_at;
+	time_t created_at;
 	struct Tweet *next_tweet, *previous_tweet;
 } Tweet;
 
+char *_relative_time(time_t past_time);
 char *_html_escape_string(char *string);
 void TwitterUser_free(TwitterUser *user);
 void Tweet_free(Tweet *tweet, int free_related_tweets_too);
 
 int TwitterAPI_search(char *search_term, Tweet **first_search_result);
 int TwitterAPI_home_timeline(Tweet **first_tweet);
+int TwitterAPI_mentions_timeline(Tweet **first_tweet);
+int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user);

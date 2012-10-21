@@ -2,6 +2,7 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define MAX_BUFFER 65536
 
