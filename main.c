@@ -66,7 +66,7 @@ int main() {
 	}
 	
 	Tweet *first_tweet;	
-	int success = TwitterAPI_home_timeline(&first_tweet);
+	int success = TwitterAPI_mentions_timeline(&first_tweet);
 	
 	Tweet *current_tweet = first_tweet;
 	while(current_tweet != NULL) {

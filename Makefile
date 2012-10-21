@@ -6,7 +6,7 @@ FILES += twitter_api_oauth.c
 FILES += crypto/*.c
 
 LIBRARIES += -lcurl
-LIBRARIES += -ljson
+LIBRARIES += -ljson-c
 # LIBRARIES += -lcrypto
 
 EXECUTABLE = twitterc
