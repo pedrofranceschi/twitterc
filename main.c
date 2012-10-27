@@ -55,7 +55,7 @@ int main() {
 		
 	printf("Enter the PIN: ");
 	fgets(str, 10, stdin);
-		
+	
 	/* remove newline, if present */
 	i = strlen(str)-1;
 	if( str[ i ] == '\n') 
@@ -73,16 +73,16 @@ int main() {
 	
     Tweet *current_tweet = first_tweet;
     while(current_tweet != NULL) {
-	printf("current tweet: %s\n", current_tweet->text);
-	char *date_str = _relative_time(current_tweet->created_at);
-	printf("date (%i): %s ago\n", current_tweet->created_at, date_str);
-	free(date_str);
-	printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->id_str);
-	printf(" id: %s\n\n", current_tweet->id_str);
-	current_tweet = (Tweet *)current_tweet->next_tweet;
+		printf("current tweet: %s\n", current_tweet->text);
+		char *date_str = _relative_time(current_tweet->created_at);
+		printf("date (%i): %s ago\n", current_tweet->created_at, date_str);
+		free(date_str);
+		printf("user name: %s (%s) - %i\n", current_tweet->author->name, current_tweet->author->screen_name, current_tweet->author->id_str);
+		printf(" id: %s\n\n", current_tweet->id_str);
+		current_tweet = (Tweet *)current_tweet->next_tweet;
     }
 	
-    error = TwitterAPI_statuses_update("teste disso (bolado de^^^^%%%% mais)", NULL);
+    error = TwitterAPI_statuses_update("é um teste.", NULL);
     printf("error: %i\n", error);
 	
     // 
