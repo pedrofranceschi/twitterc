@@ -38,7 +38,7 @@ char *_html_escape_string(char *string) {
 	int i, j;
 
 	for(i = 0; i < strlen(string); i++) {
-		char current_char = string[i];
+		unsigned char current_char = string[i];
 		int replace_current_char = 1;
 		for(j = 0; j < sizeof(ignore_escape_characters)/sizeof(char); j++) {
 			if(ignore_escape_characters[j] == current_char) {
@@ -55,6 +55,7 @@ char *_html_escape_string(char *string) {
 		if(replace_current_char == 1) {
 			char *new_string = malloc(sizeof(char) * 15);
 			sprintf(new_string, "%%%02X", current_char);
+			printf("new_string: %s", new_string);			
 			strcat(escaped_string, new_string);
 			free(new_string);
 		}
