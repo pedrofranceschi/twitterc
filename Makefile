@@ -14,5 +14,5 @@ EXECUTABLE = twitterc
 all:
 	gcc $(FILES) $(LIBRARIES) -o $(EXECUTABLE)
 
-run:
+run: all
 	./$(EXECUTABLE)
