@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
 	retweeted_tweet.id_str = strdup("260885034544795651");
 	
 	Tweet *first_tweet;
-	// int error = TwitterAPI_user_timeline(&first_tweet, &twitter_user);
-	int error = TwitterAPI_get_retweets(&retweeted_tweet, &first_tweet);
+	int error = TwitterAPI_user_timeline(&first_tweet, &twitter_user);
+	// int error = TwitterAPI_get_retweets(&retweeted_tweet, &first_tweet);
 	
 	Tweet *current_tweet = first_tweet;
 	while(current_tweet != NULL) {
@@ -47,4 +47,7 @@ int main(int argc, char *argv[]) {
 		printf(" id: %s\n\n", current_tweet->id_str);
 		current_tweet = (Tweet *)current_tweet->next_tweet;
 	}
+	
+	error = TwitterAPI_statuses_retweet(&retweeted_tweet);
+	printf("error retweeting: %i\n", error);
 }

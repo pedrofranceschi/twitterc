@@ -29,3 +29,4 @@ int TwitterAPI_user_timeline(Tweet **first_tweet, TwitterUser *user);
 int TwitterAPI_statuses_update(char *text, Tweet *in_reply_to_tweet);
 int TwitterAPI_statuses_destroy(Tweet *statuses);
 int TwitterAPI_get_retweets(Tweet *tweet, Tweet **first_tweet);
+int TwitterAPI_statuses_retweet(Tweet *tweet);

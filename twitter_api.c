@@ -419,3 +419,23 @@ int TwitterAPI_get_retweets(Tweet *tweet, Tweet **first_tweet) {
 	HTTPConnection_free(&http_connection);
 	return status;
 }
+
+int TwitterAPI_statuses_retweet(Tweet *tweet) {
+	if(tweet->id_str == NULL) {
+		return -1;
+	}
+	
+	HTTPConnection http_connection;
+	HTTPConnection_initialize(&http_connection);
+	http_connection.url = malloc(sizeof(char) * 200);
+	sprintf(http_connection.url, "https://api.twitter.com/1.1/statuses/retweet/%s.json", tweet->id_str);
+	http_connection.connection_method = HTTPConnectionMethodPOST;
+	
+	TwitterAPI_oauth_authenticate_connection(&http_connection);
+
+	int status = HTTPConnection_perform_request(&http_connection);
+	if(status != 0) return status;
+	
+	HTTPConnection_free(&http_connection);
+	return status;
+}
