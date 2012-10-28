@@ -55,7 +55,6 @@ char *_html_escape_string(char *string) {
 		if(replace_current_char == 1) {
 			char *new_string = malloc(sizeof(char) * 15);
 			sprintf(new_string, "%%%02X", current_char);
-			printf("new_string: %s", new_string);			
 			strcat(escaped_string, new_string);
 			free(new_string);
 		}

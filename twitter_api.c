@@ -367,15 +367,15 @@ int TwitterAPI_statuses_update(char *text, Tweet *in_reply_to_tweet) {
 	return status;
 }
 
-int TwitterAPI_statuses_destroy(Tweet *statuses) {
-	if(statuses->id_str == NULL) {
+int TwitterAPI_statuses_destroy(Tweet *status) {
+	if(status->id_str == NULL) {
 		return -1;
 	}
 
 	HTTPConnection http_connection;
 	HTTPConnection_initialize(&http_connection);
 	http_connection.url = malloc(sizeof(char) * 200);
-	sprintf(http_connection.url, "https://api.twitter.com/1.1/statuses/destroy/%s.json", statuses->id_str);
+	sprintf(http_connection.url, "https://api.twitter.com/1.1/statuses/destroy/%s.json", status->id_str);
 	http_connection.connection_method = HTTPConnectionMethodPOST;
 
 	// http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
@@ -385,11 +385,37 @@ int TwitterAPI_statuses_destroy(Tweet *statuses) {
 
 	TwitterAPI_oauth_authenticate_connection(&http_connection);
 
-	int status = HTTPConnection_perform_request(&http_connection);
-	if(status != 0) return status;
+	int status_code = HTTPConnection_perform_request(&http_connection);
+	if(status_code != 0) return status_code;
 
 	printf("response: %s\n", http_connection.response_buffer);
 
+	HTTPConnection_free(&http_connection);
+	return status_code;
+}
+
+int TwitterAPI_get_retweets(Tweet *tweet, Tweet **first_tweet) {
+	if(tweet->id_str == NULL) {
+		return -1;
+	}
+	
+	HTTPConnection http_connection;
+	HTTPConnection_initialize(&http_connection);
+	http_connection.url = malloc(sizeof(char) * 200);
+	sprintf(http_connection.url, "https://api.twitter.com/1.1/statuses/retweets/%s.json", tweet->id_str);	
+	
+	http_connection.first_parameter = malloc(sizeof(*http_connection.first_parameter));
+	HTTPParameter_initialize(http_connection.first_parameter);
+	http_connection.first_parameter->key = strdup("count");
+	http_connection.first_parameter->value = strdup("100");
+	
+	TwitterAPI_oauth_authenticate_connection(&http_connection);
+
+	int status = HTTPConnection_perform_request(&http_connection);
+	if(status != 0) return status;
+
+	status = _parse_timeline_from_json(http_connection.response_buffer, first_tweet);
+	// printf(" got \n");
 	HTTPConnection_free(&http_connection);
 	return status;
 }
